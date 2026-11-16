@@ -39,11 +39,19 @@ const TEMP = opts([
   ["Sangat tinggi", 1, "Di atas ±85°C, atau merah di aplikasi monitor"],
 ]);
 
-/* ---------- Gejala (G1 - G22 dan G24 - G29) ----------
-   Gejala yang sama memakai nomor yang sama walau dipakai di kategori berbeda.
-   G1 (suhu CPU/GPU tinggi) dipakai di Overheating (R1) dan Graphic Glitch (R16).
-   G4 (PC mati/restart sendiri) dipakai di Overheating (R6) dan Blue Screen (R23).
-   G23 pada rancangan lama sudah diganti menjadi G1. */
+/* ---------- Gejala ----------
+   Nomor yang dipakai: G1-G12, G14-G22, G24-G28 (26 gejala).
+   G13, G23, dan G29 sudah tidak dipakai.
+
+   Gejala bersama (ditanya SEKALI, jawabannya dipakai ulang lintas kategori):
+     G1  suhu CPU/GPU tinggi      -> R1 (Overheating)   dan R16 (Graphic Glitch)
+     G4  PC restart/mati sendiri  -> R6 (Overheating)   dan R9  (Blue Screen)
+     G16 read error saat akses file pada drive
+                                  -> R11 (Blue Screen)  dan R22 (Corrupted Install)
+
+   G16 dan G24 adalah dua gejala BERBEDA dan tidak boleh saling menggantikan:
+     G16 = read error / file tidak dapat dibaca saat mengakses file pada drive
+     G24 = installer menampilkan pesan file instalasi rusak (corrupt) */
 export const SYMPTOMS = {
   // ----- Overheating -----
   G1: {
@@ -67,7 +75,7 @@ export const SYMPTOMS = {
     options: FREQ,
   },
   G4: {
-    yn: "Apakah PC pernah mati atau restart sendiri tanpa peringatan?",
+    yn: "Apakah PC pernah restart atau mati sendiri tanpa peringatan?",
     level: "Seberapa sering PC mati atau restart sendiri?",
     options: opts([
       ["Beberapa kali", 0.4],
@@ -152,11 +160,6 @@ export const SYMPTOMS = {
       ["Pasti, langsung setelah itu", 1],
     ]),
   },
-  G13: {
-    yn: "Apakah PC restart sendiri setelah layar biru muncul?",
-    level: "Seberapa sering PC restart sendiri setelah itu?",
-    options: FREQ,
-  },
   G14: {
     yn: "Apakah layar biru muncul acak, termasuk saat PC hanya dipakai ringan atau didiamkan?",
     level: "Seberapa sering muncul saat pemakaian ringan?",
@@ -168,8 +171,8 @@ export const SYMPTOMS = {
     options: SURE,
   },
   G16: {
-    yn: "Apakah loading file sangat lambat, atau muncul error saat membaca file?",
-    level: "Seberapa sering itu terjadi?",
+    yn: "Saat mengakses file di drive, apakah muncul read error atau file tidak bisa dibaca?",
+    level: "Seberapa sering read error itu muncul?",
     options: FREQ,
   },
 
@@ -233,13 +236,13 @@ export const SYMPTOMS = {
   },
   // ----- Corrupted Install -----
   G24: {
-    yn: "Apakah muncul pesan file rusak atau tidak bisa dibaca saat instalasi?",
-    level: "Seberapa jelas pesan errornya?",
+    yn: "Apakah installer menampilkan pesan bahwa file instalasi rusak (corrupt)?",
+    level: "Seberapa jelas pesan corrupt-nya?",
     options: opts([
-      ["Ada error, tapi tidak jelas penyebabnya", 0.4],
-      ["Menyebut file tidak bisa dibuka atau dibaca", 0.6],
+      ["Ada error, tapi tidak jelas menyebut corrupt", 0.4],
+      ["Menyebut file tidak valid atau gagal diekstrak", 0.6],
       ["Menyebut arsip atau paket rusak", 0.8, "Misalnya 'CRC error' atau 'archive is corrupted'"],
-      ["Ya, jelas menyebut file rusak", 1],
+      ["Ya, jelas menyebut file instalasi rusak (corrupt)", 1],
     ]),
   },
   G25: {
@@ -281,11 +284,6 @@ export const SYMPTOMS = {
       ["Cukup sering memblokir", 0.8],
       ["Selalu memblokir atau menghapus file", 1],
     ]),
-  },
-  G29: {
-    yn: "Apakah ada error saat membaca file lain di drive yang sama?",
-    level: "Seberapa sering error baca itu muncul?",
-    options: FREQ,
   },
 };
 
@@ -433,12 +431,9 @@ export const RULES = [
   // Blue Screen
   { id: "R7",  if: ["G10", "G11"],        then: "F3",  cf: 0.8 },
   { id: "R8",  if: ["F3", "G14"],         then: "F4",  cf: 0.6 },
-  { id: "R9",  if: ["F3", "G12", "G13"],  then: "D5",  cf: 0.8 },
+  { id: "R9",  if: ["F3", "G12", "G4"],   then: "D5",  cf: 0.8 },
   { id: "R10", if: ["F4", "G15"],         then: "D6",  cf: 0.8 },
   { id: "R11", if: ["F4", "G16"],         then: "D7",  cf: 0.7 },
-  // R23: jalur alternatif menuju D5 (memakai G4 yang juga dipakai R6 di Overheating).
-  // R9 dan R23 sama-sama menyimpulkan D5, CF-nya digabung kalau keduanya terpenuhi.
-  { id: "R23", if: ["F3", "G12", "G4"],   then: "D5",  cf: 0.8 },
 
   // Graphic Glitch (R12 dan R13 sama-sama menyimpulkan F5, CF-nya digabung)
   { id: "R12", if: ["G17"],               then: "F5",  cf: 0.8 },
@@ -453,7 +448,7 @@ export const RULES = [
   { id: "R19", if: ["F7", "G26"],         then: "D11", cf: 0.9 },
   { id: "R20", if: ["F7", "G27"],         then: "D12", cf: 0.6 },
   { id: "R21", if: ["F7", "G28"],         then: "D13", cf: 0.7 },
-  { id: "R22", if: ["F7", "G29"],         then: "D14", cf: 0.8 },
+  { id: "R22", if: ["F7", "G16"],         then: "D14", cf: 0.8 },
 ];
 
 /* ---------- Jenis masalah (pilihan awal user) = kumpulan goal ---------- */

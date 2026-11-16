@@ -64,5 +64,5 @@ test("Gejala bersama: G1 dijawab di Overheating tidak ditanya lagi di Graphic Gl
   expect(screen.getAllByText(/sudah tersimpan/).length).toBeGreaterThan(0);
   // pertanyaan pertama Graphic Glitch adalah G17 (artefak), bukan suhu
   expect(screen.getByText(/titik, garis, atau kotak warna aneh/)).toBeTruthy();
-  expect(screen.queryByText(/suhu CPU atau GPU terasa/)).toBeTruthy(); // hanya riwayat chat sebelumnya
+  expect(screen.getAllByText(/suhu CPU atau GPU terasa/).length).toBe(1); // hanya riwayat chat sebelumnya, tidak ditanya lagi
 });

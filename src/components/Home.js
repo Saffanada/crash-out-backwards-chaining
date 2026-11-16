@@ -54,8 +54,8 @@ const features = [
 
 const stats = [
   { icon: <PuzzlePieceIcon size={32} color="#fafafa" />, value: "4+", label: "Jenis masalah" },
-  { icon: <BinocularsIcon size={32} color="#fafafa" />, value: "28", label: "Gejala dicek" },
-  { icon: <ChartLineIcon size={32} color="#fafafa" />, value: "23", label: "Rule penalaran" },
+  { icon: <BinocularsIcon size={32} color="#fafafa" />, value: "26", label: "Gejala dicek" },
+  { icon: <ChartLineIcon size={32} color="#fafafa" />, value: "22", label: "Rule penalaran" },
   { icon: <WalletIcon size={32} color="#fafafa" />, value: "Gratis", label: "Dipakai" },
 ];
 

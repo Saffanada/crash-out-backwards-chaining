@@ -21,7 +21,7 @@ npm test       # uji mesin inferensi (sesuai PDF rule) dan alur chat
 
 ## Notasi
 
-- **G** = gejala, ditanyakan ke user (G1 sampai G29, tanpa G23)
+- **G** = gejala, ditanyakan ke user (G1 sampai G28, tanpa G13 dan G23; 26 gejala)
 - **F** = fakta antara, kesimpulan sebuah rule yang menjadi premis rule lain
 - **D** = diagnosis akhir, goal yang dibuktikan (D1 sampai D14)
 
@@ -49,14 +49,12 @@ R6 IF F2 AND G4           THEN D4 Overheating kritis                 (0.8)
 ```
 R7  IF G10 AND G11         THEN F3 Crash sistem berulang              (0.8)
 R8  IF F3 AND G14          THEN F4 Crash tanpa pemicu beban           (0.6)
-R9  IF F3 AND G12 AND G13  THEN D5 Driver/update bermasalah           (0.8)
+R9  IF F3 AND G12 AND G4   THEN D5 Driver/update bermasalah           (0.8)
 R10 IF F4 AND G15          THEN D6 RAM bermasalah                     (0.8)
 R11 IF F4 AND G16          THEN D7 Disk/file sistem rusak             (0.7)
-R23 IF F3 AND G12 AND G4   THEN D5 Driver/update bermasalah           (0.8)
 ```
 
-R9 dan R23 adalah dua jalur menuju D5 (R9 memakai G13, R23 memakai G4). Kalau keduanya
-terpenuhi, CF digabung dengan rumus kombinasi.
+G13 tidak dipakai lagi karena restart atau mati sendiri sudah diwakili G4 (R9 memakai G4).
 
 **Graphic Glitch**
 
@@ -78,19 +76,14 @@ Gejala yang sama memakai nomor yang sama. Sistem hanya menanyakannya **sekali** 
 dipakai ulang di kategori lain:
 
 - **G1** (suhu CPU/GPU tinggi): R1 (Overheating) dan R16 (Graphic Glitch)
-- **G4** (PC mati/restart sendiri): R6 (Overheating) dan R23 (Blue Screen)
+- **G4** (PC restart atau mati sendiri): R6 (Overheating) dan R9 (Blue Screen)
+- **G16** (read error saat mengakses file pada drive): R11 (Blue Screen) dan R22 (Corrupted Install)
 
-G23 pada rancangan lama sudah diganti menjadi G1.
+**G16 dan G24 adalah dua gejala berbeda.** G24 hanya untuk Corrupted Install (R18) dan
+menanyakan pesan installer bahwa file instalasi rusak (corrupt). Jawaban G16 tidak
+mengisi G24, begitu pula sebaliknya. Keduanya disimpan sebagai dua entri terpisah di working memory.
 
-**Corrupted Install**
-
-```
-R18 IF G24 AND G25         THEN F7 Instalasi gagal karena file        (0.8)
-R19 IF F7 AND G26          THEN D11 Installer tidak utuh              (0.9)
-R20 IF F7 AND G27          THEN D12 Ruang penyimpanan kurang          (0.6)
-R21 IF F7 AND G28          THEN D13 Antivirus memblokir file          (0.7)
-R22 IF F7 AND G29          THEN D14 Disk bermasalah                   (0.8)
-```
+G13, G23, dan G29 sudah tidak dipakai.
 
 ## Alur backward chaining
 
@@ -103,7 +96,7 @@ R22 IF F7 AND G29          THEN D14 Disk bermasalah                   (0.8)
      tanpa ditanyakan.
    - **Ya**: user memilih tingkat gejala, yang menjadi CF_user (0.2 sampai 1.0).
 4. Jawaban disimpan di working memory (`answers`) dan **tidak direset saat pindah kategori**,
-   jadi gejala bersama (G1, G4) tidak ditanya ulang.
+   jadi gejala bersama (G1, G4, G16) tidak ditanya ulang.
 5. Hasil akhir berupa daftar diagnosis beserta CF dan jejak rule yang dilalui.
    Diagnosis dengan CF di atas 40% menampilkan rekomendasi perbaikan.
 

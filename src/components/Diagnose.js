@@ -5,7 +5,6 @@ import {
   MonitorIcon,
   FileXIcon,
   PaperPlaneRightIcon,
-  CheckCircleIcon,
   ArrowCounterClockwiseIcon,
   HouseIcon,
   WrenchIcon,
